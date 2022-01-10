@@ -21,7 +21,6 @@ class publish(Builder):
         self.supportedProjectTypes = [] #all
 
     def PreBuild(self, **kwargs):
-        self.repo = kwargs.get("repo")
         if (not len(self.repo)):
             raise OtherBuildError(f'Repo credentials required to publish package')
 
@@ -58,6 +57,7 @@ class publish(Builder):
 
     # Required Builder method. See that class for details.
     def Build(self):
+        os.chdir(self.rootPath)
         logging.debug(f"Creating archive {self.targetFile}")
         if (os.path.exists(self.targetFile)):
             os.remove(self.targetFile)
