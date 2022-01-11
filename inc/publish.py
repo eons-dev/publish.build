@@ -14,27 +14,17 @@ class publish(Builder):
         #Build path is what we use to publish. We definitely don't want to clear it.
         self.clearBuildPath = False
 
-        self.requiredKWArgs.append("repo")
-        self.requiredKWArgs.append("--version")
-        # self.requiredKWArgs.append("--visibility") # this is optional. Defaults to private
+        self.requiredKWArgs.append("version")
+        
+        self.optionalKWArgs.append("visibility")
+        self.optionalKWArgs.append("packageType")
+        self.optionalKWArgs.append("description")
 
         self.supportedProjectTypes = [] #all
 
     def PreBuild(self, **kwargs):
         if (not len(self.repo)):
             raise OtherBuildError(f'Repo credentials required to publish package')
-
-        self.packageVisibility = 'private'
-        if ("--visibility" in kwargs):
-            self.packageVisibility = kwargs.get("--visibility")
-
-        self.packageType = ''
-        if ("--package-type" in kwargs):
-            self.packageType = kwargs.get("--package-type")
-
-        self.desciption = ''
-        if ("--description" in kwargs):
-            self.description = kwargs.get("--description")
 
         nameComponents = [self.projectType, self.projectName]
         if (self.packageType):
@@ -43,12 +33,12 @@ class publish(Builder):
         self.packageName = '_'.join(nameComponents)
 
         self.targetFileName = f'{self.packageName}.zip'
-        self.targetFile = os.path.join(self.repo['store'], self.targetFileName)
+        self.targetFile = os.path.join(self.executor.args.repo_store, self.targetFileName)
 
         self.requestData = {
             'package_name': self.packageName,
             'version': kwargs.get("--version"),
-            'visibility': self.packageVisibility
+            'visibility': self.visibility
         }
         if (self.packageType):
             self.requestData['package_type'] = self.packageType
@@ -70,7 +60,7 @@ class publish(Builder):
         self.requestData['package'] = str(base64.b64encode(open(self.targetFile, 'rb').read()).decode('ascii'))
         requestData = jsonpickle.encode(self.requestData)
         logging.debug(f'Request data: {requestData}')
-        packageQuery = requests.post(f"{self.repo['url']}/publish", auth=requests.auth.HTTPBasicAuth(self.repo['username'], self.repo['password']), data=requestData)
+        packageQuery = requests.post(f"{self.executor.args.repo_url}/publish", auth=requests.auth.HTTPBasicAuth(self.executor.args.repo_username, self.executor.args.repo_password), data=requestData)
 
         logging.debug(f'''Request sent...
 ----------------------------------------        
