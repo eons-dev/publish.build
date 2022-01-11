@@ -16,19 +16,19 @@ class publish(Builder):
 
         self.requiredKWArgs.append("version")
         
-        self.optionalKWArgs.append("visibility")
-        self.optionalKWArgs.append("packageType")
-        self.optionalKWArgs.append("description")
+        self.optionalKWArgs["visibility"] = "private"
+        self.optionalKWArgs["package_type"] = ""
+        self.optionalKWArgs["description"] = ""
 
         self.supportedProjectTypes = [] #all
 
     def PreBuild(self, **kwargs):
-        if (not len(self.repo)):
+        if (not self.executor.args.repo_username or not self.executor.args.repo_password):
             raise OtherBuildError(f'Repo credentials required to publish package')
 
         nameComponents = [self.projectType, self.projectName]
-        if (self.packageType):
-            nameComponents.append(self.packageType)
+        if (self.package_type):
+            nameComponents.append(self.package_type)
 
         self.packageName = '_'.join(nameComponents)
 
@@ -37,12 +37,12 @@ class publish(Builder):
 
         self.requestData = {
             'package_name': self.packageName,
-            'version': kwargs.get("--version"),
+            'version': self.version,
             'visibility': self.visibility
         }
-        if (self.packageType):
-            self.requestData['package_type'] = self.packageType
-        if (self.desciption):
+        if (self.package_type):
+            self.requestData['package_type'] = self.package_type
+        if (self.description):
             self.requestData['description'] = self.description
 
     # Required Builder method. See that class for details.
