@@ -3,11 +3,15 @@
   "ebbs_next": [
     {
       "build" : "publish",
-      "run_when" : "release",
+      "build_in" : "inc",
+      "run_when" : [
+      	"release"
+      ],
       "copy" : [
         {"../inc/" : "inc/"}
       ],
       "config" : {
+      	"clear_build_path" : false,
         "visibility" : "public"
       }
     }
