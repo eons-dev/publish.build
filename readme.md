@@ -31,4 +31,4 @@ You can view published packages at https://infrastructure.tech/package
 
 NOTE: if you would like to privately publish packages, please contact support@infrastructure.tech. We'll be happy to create you an account and make sure our tools are suited to your use case :)
 
-Once the Infrastructure front end is fully built, there will be a registration page where you'll be able to sign up yourself.
+Once the Infrastructure front end is fully built, there will be a registration page where you'll be able to sign up yourthis.

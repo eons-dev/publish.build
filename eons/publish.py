@@ -8,69 +8,69 @@ from ebbs import Builder
 from ebbs import OtherBuildError
 
 class publish(Builder):
-    def __init__(self, name="Publisher"):
+    def __init__(this, name="Publisher"):
         super().__init__(name)
 
         #Build path is what we use to publish. We definitely don't want to clear it.
-        self.clearBuildPath = False
+        this.clearBuildPath = False
 
-        self.requiredKWArgs.append("repo")
-        self.requiredKWArgs.append("--version")
-        # self.requiredKWArgs.append("--visibility") # this is optional. Defaults to private
+        this.requiredKWArgs.append("repo")
+        this.requiredKWArgs.append("--version")
+        # this.requiredKWArgs.append("--visibility") # this is optional. Defaults to private
 
-        self.supportedProjectTypes = [] #all
+        this.supportedProjectTypes = [] #all
 
-    def PreBuild(self, **kwargs):
-        if (not len(self.repo)):
+    def PreBuild(this, **kwargs):
+        if (not len(this.repo)):
             raise OtherBuildError(f'Repo credentials required to publish package')
 
-        self.packageVisibility = 'private'
+        this.packageVisibility = 'private'
         if ("--visibility" in kwargs):
-            self.packageVisibility = kwargs.get("--visibility")
+            this.packageVisibility = kwargs.get("--visibility")
 
-        self.packageType = ''
+        this.packageType = ''
         if ("--package-type" in kwargs):
-            self.packageType = kwargs.get("--package-type")
+            this.packageType = kwargs.get("--package-type")
 
-        self.desciption = ''
+        this.desciption = ''
         if ("--description" in kwargs):
-            self.description = kwargs.get("--description")
+            this.description = kwargs.get("--description")
 
-        nameComponents = [self.projectType, self.projectName]
-        if (self.packageType):
-            nameComponents.append(self.packageType)
+        nameComponents = [this.projectType, this.projectName]
+        if (this.packageType):
+            nameComponents.append(this.packageType)
 
-        self.packageName = '_'.join(nameComponents)
+        this.packageName = '_'.join(nameComponents)
 
-        self.targetFileName = f'{self.packageName}.zip'
-        self.targetFile = os.path.join(self.repo['store'], self.targetFileName)
+        this.targetFileName = f'{this.packageName}.zip'
+        this.targetFile = os.path.join(this.repo['store'], this.targetFileName)
 
-        self.requestData = {
-            'package_name': self.packageName,
+        this.requestData = {
+            'package_name': this.packageName,
             'version': kwargs.get("--version"),
-            'visibility': self.packageVisibility
+            'visibility': this.packageVisibility
         }
-        if (self.packageType):
-            self.requestData['package_type'] = self.packageType
-        if (self.desciption):
-            self.requestData['description'] = self.description
+        if (this.packageType):
+            this.requestData['package_type'] = this.packageType
+        if (this.desciption):
+            this.requestData['description'] = this.description
 
     # Required Builder method. See that class for details.
-    def Build(self):
-        os.chdir(self.rootPath)
-        logging.debug(f"Creating archive {self.targetFile}")
-        if (os.path.exists(self.targetFile)):
-            os.remove(self.targetFile)
+    def Build(this):
+        os.chdir(this.rootPath)
+        logging.debug(f"Creating archive {this.targetFile}")
+        if (os.path.exists(this.targetFile)):
+            os.remove(this.targetFile)
 
-        shutil.make_archive(self.targetFile[:-4], 'zip', self.buildPath)
+        shutil.make_archive(this.targetFile[:-4], 'zip', this.buildPath)
         logging.debug("Archive created")
 
         logging.debug("Uploading archive to repository")
         #NOTE: jsonpickle can b64 encode binary data but we want to do it first to avoid an extraneous {"py/b64":...} object being added to the request body.
-        self.requestData['package'] = str(base64.b64encode(open(self.targetFile, 'rb').read()).decode('ascii'))
-        requestData = jsonpickle.encode(self.requestData)
+        this.requestData['package'] = str(base64.b64encode(open(this.targetFile, 'rb').read()).decode('ascii'))
+        requestData = jsonpickle.encode(this.requestData)
         logging.debug(f'Request data: {requestData}')
-        packageQuery = requests.post(f"{self.repo['url']}/publish", auth=requests.auth.HTTPBasicAuth(self.repo['username'], self.repo['password']), data=requestData)
+        packageQuery = requests.post(f"{this.repo['url']}/publish", auth=requests.auth.HTTPBasicAuth(this.repo['username'], this.repo['password']), data=requestData)
 
         logging.debug(f'''Request sent...
 ----------------------------------------        
@@ -82,7 +82,7 @@ Content: {packageQuery.content}
 ''')
 
         if (packageQuery.status_code != 200):
-            logging.error(f'Failed to publish {self.projectName}')
-            raise OtherBuildError(f'Failed to publish {self.projectName}')
+            logging.error(f'Failed to publish {this.projectName}')
+            raise OtherBuildError(f'Failed to publish {this.projectName}')
 
-        logging.info(f'Successfully published {self.projectName}')
+        logging.info(f'Successfully published {this.projectName}')
