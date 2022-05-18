@@ -23,7 +23,7 @@ class publish(Builder):
         this.supportedProjectTypes = [] #all
 
     def PreBuild(this, **kwargs):
-        if (not this.executor.args.repo_username or not this.executor.args.repo_password):
+        if (not this.executor.repo['username'] or not this.executor.repo['password']):
             raise OtherBuildError(f'Repo credentials required to publish package')
 
         nameComponents = [this.projectType, this.projectName]
@@ -33,7 +33,7 @@ class publish(Builder):
         this.packageName = '_'.join(nameComponents)
 
         this.targetFileName = f'{this.packageName}.zip'
-        this.targetFile = os.path.join(this.executor.args.repo_store, this.targetFileName)
+        this.targetFile = os.path.join(this.executor.repo['store'], this.targetFileName)
 
         this.requestData = {
             'package_name': this.packageName,
@@ -60,7 +60,7 @@ class publish(Builder):
         this.requestData['package'] = str(base64.b64encode(open(this.targetFile, 'rb').read()).decode('ascii'))
         requestData = jsonpickle.encode(this.requestData)
         logging.debug(f'Request data: {requestData}')
-        packageQuery = requests.post(f"{this.executor.args.repo_url}/publish", auth=requests.auth.HTTPBasicAuth(this.executor.args.repo_username, this.executor.args.repo_password), data=requestData)
+        packageQuery = requests.post(f"{this.executor.repo['url']}/publish", auth=requests.auth.HTTPBasicAuth(this.executor.repo['username'], this.executor.repo['password']), data=requestData)
 
         logging.debug(f'''Request sent...
 ----------------------------------------        
