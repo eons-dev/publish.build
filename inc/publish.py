@@ -15,6 +15,8 @@ class publish(Builder):
         this.clearBuildPath = False
 
         this.requiredKWArgs.append("version")
+        this.requiredKWArgs.append("repo_username")
+        this.requiredKWArgs.append("repo_password")
         
         this.optionalKWArgs["visibility"] = "private"
         this.optionalKWArgs["package_type"] = ""
@@ -60,7 +62,16 @@ class publish(Builder):
         this.requestData['package'] = str(base64.b64encode(open(this.targetFile, 'rb').read()).decode('ascii'))
         requestData = jsonpickle.encode(this.requestData)
         logging.debug(f'Request data: {requestData}')
-        packageQuery = requests.post(f"{this.executor.repo['url']}/publish", auth=requests.auth.HTTPBasicAuth(this.executor.repo['username'], this.executor.repo['password']), data=requestData)
+        packageQuery = requests.post(
+            f"{this.executor.repo['url']}/publish",
+            auth=requests.auth.HTTPBasicAuth(
+                this.repo_username.replace('"',''),
+                this.repo_password.replace('"','')),
+            data=requestData,
+            headers={
+                'Content-Type': 'application/json'
+                }
+        )
 
         logging.debug(f'''Request sent...
 ----------------------------------------        
