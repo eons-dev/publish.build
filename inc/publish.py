@@ -28,11 +28,11 @@ class publish(Builder):
         if (not this.executor.repo['username'] or not this.executor.repo['password']):
             raise OtherBuildError(f'Repo credentials required to publish package')
 
-        nameComponents = [this.projectType, this.projectName]
+        nameComponents = [this.projectName, this.projectType]
         if (this.package_type):
             nameComponents.append(this.package_type)
 
-        this.packageName = '_'.join(nameComponents)
+        this.packageName = '.'.join(nameComponents)
 
         this.targetFileName = f'{this.packageName}.zip'
         this.targetFile = os.path.join(this.executor.repo['store'], this.targetFileName)
